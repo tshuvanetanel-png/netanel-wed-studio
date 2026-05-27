@@ -105,7 +105,7 @@ async function fetchRealBusinesses(apiKey, city, categoryId, pageToken = null) {
       const hours = p.opening_hours?.weekday_text?.join(" | ") ||
                     p.opening_hours?.periods ? "ראה שעות בגוגל" : "לא צוין";
       return {
-        id: p.place_id,
+        id: `${p.place_id || p.name}_${city}_${categoryId}`.replace(/[\s:]/g,"_"),
         name: p.name,
         category: categoryId,
         categoryLabel: keyword,
@@ -939,7 +939,7 @@ function StatusDropdown({ bizId, leadStatus, setStatusWithDate }) {
   }, [open]);
 
   return (
-    <div data-dropdown="" style={{ position:"relative" }} onClick={e => e.stopPropagation()}>
+    <div data-dropdown="" style={{ position:"relative" }} onClick={e => { e.stopPropagation(); e.preventDefault(); }}>
       <button ref={btnRef} onClick={handleOpen} style={{
         display:"flex", alignItems:"center", gap:5,
         background:current.bg, border:`1px solid ${current.color}50`,
