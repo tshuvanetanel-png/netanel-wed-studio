@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const CATEGORY_QUERIES = {
   tradesman:  "שרברב|חשמלאי|נגר|טכנאי|מסגר|צבעי|גבס|אינסטלטור",
@@ -423,9 +423,7 @@ ${biz.phone} | ${biz.hours}
 מדיניות פרטיות | תנאי שימוש | הצהרת נגישות
 
 שורה 3 — זכויות יוצרים:
-הפוטר עכשיו מציג:
-© 2026 כל הזכויות שמורות לנתנאל תשובה | Netanel Teshuva
-אתר זה הוכן כדמו בלבד ואינו מורשה לשימוש מסחרי ללא אישור בכתב
+© ${year} כל הזכויות שמורות לנתנאל תשובה | Netanel Teshuva
 עוצב על ידי נתנאל תשובה | Netanel Teshuva
 
 הוסף עמודים נפרדים (sections נסתרים או popups) לכל אחד מהקישורים המשפטיים:
@@ -1124,7 +1122,7 @@ function App() {
   };
 
   // מעקב איזו קטגוריה נוספת כבר נטענה
-  const [extraCatIndex, setExtraCatIndex] = React.useState(0);
+  const [extraCatIndex, setExtraCatIndex] = useState(0);
 
   const handleLoadMore = async () => {
     if (!apiKey.trim()) return;
