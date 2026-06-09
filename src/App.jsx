@@ -423,7 +423,9 @@ ${biz.phone} | ${biz.hours}
 מדיניות פרטיות | תנאי שימוש | הצהרת נגישות
 
 שורה 3 — זכויות יוצרים:
-© ${year} כל הזכויות שמורות ל-${biz.name}
+הפוטר עכשיו מציג:
+© 2026 כל הזכויות שמורות לנתנאל תשובה | Netanel Teshuva
+אתר זה הוכן כדמו בלבד ואינו מורשה לשימוש מסחרי ללא אישור בכתב
 עוצב על ידי נתנאל תשובה | Netanel Teshuva
 
 הוסף עמודים נפרדים (sections נסתרים או popups) לכל אחד מהקישורים המשפטיים:
@@ -1121,34 +1123,28 @@ function App() {
     } finally { setLoading(false); }
   };
 
+  // מעקב איזו קטגוריה נוספת כבר נטענה
+  const [extraCatIndex, setExtraCatIndex] = React.useState(0);
+
   const handleLoadMore = async () => {
     if (!apiKey.trim()) return;
     setLoadingMore(true);
+    setError("");
     try {
-      // First try pageTokens (next page from google)
-      const tokenResults = pageTokens.length > 0 ? await Promise.allSettled(
-        pageTokens.map(({ city, cat, token }) =>
-          fetchRealBusinesses(apiKey.trim(), city, cat, token).catch(() => ({ bizList:[], nextPageToken:null }))
-        )
-      ) : [];
-      const tokenBiz    = tokenResults.flatMap(r => r.status==="fulfilled" ? r.value.bizList : []);
-      const newTokens   = tokenResults
-        .filter(r => r.status==="fulfilled" && r.value.nextPageToken)
-        .map(r => ({ city: r.value.city, cat: r.value.categoryId, token: r.value.nextPageToken }));
+      // בכל לחיצה — טוען קטגוריה אחת מהרשימה הנוספת בכל הערים
+      const cat = ALL_CATS_EXTRA[extraCatIndex % ALL_CATS_EXTRA.length];
+      const nextIndex = (extraCatIndex + 1) % ALL_CATS_EXTRA.length;
 
-      // Also search extra categories
-      const extraCombos = ALL_CITIES.flatMap(city => ALL_CATS_EXTRA.map(cat => ({ city, cat })));
-      const extraResults = await Promise.allSettled(
-        extraCombos.map(({ city, cat }) =>
-          fetchRealBusinesses(apiKey.trim(), city, cat).catch(() => ({ bizList:[], nextPageToken:null, city, categoryId:cat }))
+      const results = await Promise.allSettled(
+        ALL_CITIES.map(city =>
+          fetchRealBusinesses(apiKey.trim(), city, cat)
+            .catch(() => ({ bizList:[], nextPageToken:null }))
         )
       );
-      const extraBiz = extraResults.flatMap(r => r.status==="fulfilled" ? r.value.bizList : []);
-
-      const allNew = [...tokenBiz, ...extraBiz];
-      setBusinesses(prev => dedup(prev, allNew));
-      setPageTokens(newTokens);
-      if (allNew.length === 0) setError("לא נמצאו לידים נוספים");
+      const newBiz = results.flatMap(r => r.status==="fulfilled" ? r.value.bizList : []);
+      setBusinesses(prev => dedup(prev, newBiz));
+      setExtraCatIndex(nextIndex);
+      if (newBiz.length === 0) setError(`לא נמצאו לידים חדשים בקטגוריה זו`);
     } catch(e) {
       setError("שגיאה בטעינה נוספת: " + e.message);
     } finally { setLoadingMore(false); }
